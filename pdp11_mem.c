@@ -3,7 +3,7 @@
 
 typedef unsigned char byte;         // 8 bit
 typedef unsigned short int word;    // 16 bit
-typedef word address;                // 16 bit
+typedef word address;               // 16 bit
 
 #define MEMSIZE (64*1024)           // 64 kb
 
@@ -80,7 +80,32 @@ void test_mem() {
     assert(((bres1 << 8) | bres0) == w);
 }
 
+void load_data() {
+    address adr;         // адрес начала блока
+    unsigned int N;      // количество байт в блоке
+    byte x;
+    while (scanf("%hx %x", &adr, &N) == 2)  
+        for (unsigned int i = 0; i < N; i++) {
+            scanf("%hhx", &x);
+            if (adr + i < MEMSIZE)
+                b_write(adr + i, x);
+        }
+
+}
+
+void mem_dump(address adr, int size) {
+    for(int i = 0; i < size; i += 2) {
+        printf("%06o: %06o %04x\n", adr + i, w_read(adr + i), w_read(adr + i));
+    }
+}
+
 int main() {
-    test_mem();
+    //test_mem();
+    load_data();
+
+    mem_dump(0x40, 20);
+    printf("\n");
+    mem_dump(0x200, 0x26);
+
     return 0;
 }
