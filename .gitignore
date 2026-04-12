@@ -1,0 +1,17 @@
+# Скомпилированные файлы
+*.o
+*.obj
+*.exe
+*.out
+
+# Бинарники
+pdp11_mem
+pdp.exe
+
+# Файлы редакторов/IDE
+.vscode/
+.idea/
+
+test
+pdp11em-win32
+data.txt
