@@ -118,10 +118,24 @@ void load_file(const char * filename) {
     fclose(fp);
 }
 
-int main() {
+void usage(const char * progname)
+{
+    printf("USAGE: %s [-t] filename\n    filename - input data\n", progname);
+}
+
+int main(int argc, char *argv[]) {
+    // если аргументов нет, программа работать не может
+    if (argc == 1) {
+        usage(argv[0]);
+        exit(1);
+    }
+
+    // имя файла - последний аргумент
+    const char * filename = argv[argc-1];
+
     //test_mem();
     // load_data();
-    load_file("data.txt");
+    load_file(filename);
 
     mem_dump(0x200, 0x26);
     printf("\n");
