@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <assert.h>
+#include <error.h>
+#include <errno.h>
+#include <stdlib.h>
 
 typedef unsigned char byte;         // 8 bit
 typedef unsigned short int word;    // 16 bit
@@ -87,8 +90,7 @@ void load_data() {
     while (scanf("%hx %x", &adr, &N) == 2)  
         for (unsigned int i = 0; i < N; i++) {
             scanf("%hhx", &x);
-            if (adr + i < MEMSIZE)
-                b_write(adr + i, x);
+            b_write(adr + i, x);
         }
 
 }
@@ -99,13 +101,31 @@ void mem_dump(address adr, int size) {
     }
 }
 
+void load_file(const char * filename) {
+    FILE * fp  = fopen(filename, "r");   // открыть файл data.txt на чтение - поток stdin
+    if (fp == NULL) {
+        perror(filename);
+        exit(errno);
+    }
+    address adr;         // адрес начала блока
+    unsigned int N;      // количество байт в блоке
+    byte x;
+    while (fscanf(fp, "%hx %x", &adr, &N) == 2)  
+        for (unsigned int i = 0; i < N; i++) {
+            fscanf(fp, "%hhx", &x);
+            b_write(adr + i, x);
+        }
+    fclose(fp);
+}
+
 int main() {
     //test_mem();
-    load_data();
+    // load_data();
+    load_file("data.txt");
 
-    mem_dump(0x40, 20);
-    printf("\n");
     mem_dump(0x200, 0x26);
+    printf("\n");
+    mem_dump(0x400, 20);
 
     return 0;
 }
