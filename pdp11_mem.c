@@ -3,6 +3,7 @@
 #include <error.h>
 #include <errno.h>
 #include <stdlib.h>
+#include "logger.h"
 
 typedef unsigned char byte;         // 8 bit
 typedef unsigned short int word;    // 16 bit
@@ -34,33 +35,33 @@ void test_mem() {
     word w, wres;
 
     // пишем байт, читаем байт
-    fprintf(stderr, "Пишем и читаем байт по четному адресу\n");
+    logger(TRACE, "Пишем и читаем байт по четному адресу\n");
     a = 0;
     b0 = 0x12;
     b_write(a, b0);
     bres = b_read(a);
-    fprintf(stderr, "a=%04x b0=%02hhx bres=%02hhx\n", a, b0, bres);
+    logger(DEBUG, "a=%04x b0=%02hhx bres=%02hhx\n", a, b0, bres);
     assert(b0 == bres);
 
-    fprintf(stderr, "Пишем и читаем байт по нечетному адресу\n");
+    logger(TRACE, "Пишем и читаем байт по нечетному адресу\n");
     a = 1;
     b0 = 0x12;
     b_write(a, b0);
     bres = b_read(a);
-    fprintf(stderr, "a=%04x b0=%02hhx bres=%02hhx\n", a, b0, bres);
+    logger(DEBUG, "a=%04x b0=%02hhx bres=%02hhx\n", a, b0, bres);
     assert(b0 == bres);
 
     // пишем слово, читаем слово
-    fprintf(stderr, "Пишем и читаем слово\n");
+    logger(TRACE, "Пишем и читаем слово\n");
     a = 2;
     w = 0xb0b1;
     w_write(a, w);
     wres = w_read(a);
-    fprintf(stderr, "a=%04x w=%04x wres=%04x\n", a, w, wres);
+    logger(DEBUG, "a=%04x w=%04x wres=%04x\n", a, w, wres);
     assert(w == wres);
 
     // пишем 2 байта, читаем 1 слово
-    fprintf(stderr, "Пишем 2 байта, читаем слово\n");
+    logger(TRACE, "Пишем 2 байта, читаем слово\n");
     a = 4;
     w = 0xa1a2;
     // little-endian
@@ -69,17 +70,17 @@ void test_mem() {
     b_write(a, b0);
     b_write(a+1, b1);
     wres = w_read(a);
-    fprintf(stderr, "a=%04x b1=%02hhx b0=%02hhx wres=%04x\n", a, b1, b0, wres);
+    logger(DEBUG, "a=%04x b1=%02hhx b0=%02hhx wres=%04x\n", a, b1, b0, wres);
     assert(w == wres);
 
     // пишем 1 слово, читаем байты
-    fprintf(stderr, "Пишем 1 слово, читаем 2 байта\n");
+    logger(TRACE, "Пишем 1 слово, читаем 2 байта\n");
     a = 6;
     w = 0xb1b2;
     w_write(a, w);
     byte bres0 = b_read(a);
     byte bres1 = b_read(a+1);
-    fprintf(stderr, "a=%04x b1=%02hhx b0=%02hhx w=%04x\n", a, bres1, bres0, w);
+    logger(DEBUG, "a=%04x b1=%02hhx b0=%02hhx w=%04x\n", a, bres1, bres0, w);
     assert(((bres1 << 8) | bres0) == w);
 }
 
@@ -92,17 +93,16 @@ void load_data() {
             scanf("%hhx", &x);
             b_write(adr + i, x);
         }
-
 }
 
 void mem_dump(address adr, int size) {
     for(int i = 0; i < size; i += 2) {
-        printf("%06o: %06o %04x\n", adr + i, w_read(adr + i), w_read(adr + i));
+        logger(DEBUG, "%06o: %06o %04x\n", adr + i, w_read(adr + i), w_read(adr + i));
     }
 }
 
 void load_file(const char * filename) {
-    FILE * fp  = fopen(filename, "r");   // открыть файл data.txt на чтение - поток stdin
+    FILE * fp  = fopen(filename, "r");   // открыть файл data.txt на чтение - поток fp
     if (fp == NULL) {
         perror(filename);
         exit(errno);
@@ -120,10 +120,11 @@ void load_file(const char * filename) {
 
 void usage(const char * progname)
 {
-    printf("USAGE: %s [-t] filename\n    filename - input data\n", progname);
+    logger(ERROR, "USAGE: %s [-t] filename\n    filename - input data\n", progname);
 }
 
 int main(int argc, char *argv[]) {
+    set_log_level(DEBUG);
     // если аргументов нет, программа работать не может
     if (argc == 1) {
         usage(argv[0]);
@@ -133,13 +134,12 @@ int main(int argc, char *argv[]) {
     // имя файла - последний аргумент
     const char * filename = argv[argc-1];
 
-    //test_mem();
+    test_mem();
     // load_data();
-    load_file(filename);
+    // load_file(filename);
 
-    mem_dump(0x200, 0x26);
-    printf("\n");
-    mem_dump(0x400, 20);
+    // mem_dump(0x200, 0x26);
+    // mem_dump(0x400, 20);
 
     return 0;
 }
