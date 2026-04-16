@@ -20,10 +20,12 @@ byte b_read(address adr) {
     return mem[adr];
 }
 void w_write(address adr, word w) {
+    assert(adr % 2 == 0);
     mem[adr] = w & 0xFF;            // младшие 8 бит
     mem[adr+1] = (w >> 8) & 0xFF;   // старшие 8 бит
 }
 word w_read(address adr) {
+    assert(adr % 2 == 0);
     word w = ((word)mem[adr+1]) << 8;
     w = w | mem[adr];
     return w & 0xFFFF;
@@ -52,9 +54,9 @@ void test_mem() {
     assert(b0 == bres);
 
     // пишем слово, читаем слово
-    logger(TRACE, "Пишем и читаем слово\n");
+    logger(TRACE, "Пишем и читаем слово по четному адресу\n");
     a = 2;
-    w = 0xb0b1;
+    w = 0x8000; // проверка на запись отрицательного числа
     w_write(a, w);
     wres = w_read(a);
     logger(DEBUG, "a=%04x w=%04x wres=%04x\n", a, w, wres);
@@ -82,6 +84,16 @@ void test_mem() {
     byte bres1 = b_read(a+1);
     logger(DEBUG, "a=%04x b1=%02hhx b0=%02hhx w=%04x\n", a, bres1, bres0, w);
     assert(((bres1 << 8) | bres0) == w);
+
+    // программа падает
+    logger(TRACE, "Пишем слово по нечетному адресу\n");
+    a = 3;
+    w = 0xb0b1;
+    w_write(a, w);
+
+    logger(TRACE, "Читаем слово по нечетному адресу\n");
+    a = 3;
+    w_read(a);
 }
 
 void load_data() {
@@ -126,13 +138,13 @@ void usage(const char * progname)
 int main(int argc, char *argv[]) {
     set_log_level(DEBUG);
     // если аргументов нет, программа работать не может
-    if (argc == 1) {
-        usage(argv[0]);
-        exit(1);
-    }
+    // if (argc == 1) {
+    //     usage(argv[0]);
+    //     exit(1);
+    // }
 
-    // имя файла - последний аргумент
-    const char * filename = argv[argc-1];
+    // // имя файла - последний аргумент
+    // const char * filename = argv[argc-1];
 
     test_mem();
     // load_data();
